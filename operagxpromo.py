@@ -1,4 +1,4 @@
-import requests, random, string, threading
+import requests, random, string, threading, json
 
 def rstr(l):
     return ''.join(random.choice(string.ascii_letters) for _ in range(l))
@@ -15,21 +15,27 @@ def generate():
         "partnerUserId": f"{rstr(8)}-{rstr(4)}-{rstr(4)}-{rstr(4)}-{rstr(12)}",
     }
 
-    if config.get("use_proxies"):
-        with open("proxies.txt", "r") as f:
-            proxies = f.readlines()
-        proxies = {
-            "http": f"http://{random.choice(proxies)}",
-            "https": f"http://{random.choice(proxies)}"
-        }
-        resp = requests.post("https://api.discord.gx.games/v1/direct-fulfillment", headers=headers, json=payload, proxies=proxies).json()
-    else:
-        resp = requests.post("https://api.discord.gx.games/v1/direct-fulfillment", headers=headers, json=payload).json()
-    link = (f"https://discord.com/billing/partner-promotions/1180231712274387115/{resp['token']}")
-    print(link)
-    with open("promos.txt", "a") as f:
-        f.write(f"{link}\n")
-    return link
+    try:
+        if config.get("use_proxies"):
+            with open("proxies.txt", "r") as f:
+                proxies = f.readlines()
+            proxies = {
+                "http": f"http://{random.choice(proxies)}",
+                "https": f"http://{random.choice(proxies)}"
+            }
+            resp = requests.post("https://api.discord.gx.games/v1/direct-fulfillment", headers=headers, json=payload, proxies=proxies)
+        else:
+            resp = requests.post("https://api.discord.gx.games/v1/direct-fulfillment", headers=headers, json=payload)
+        if resp.text:
+            thingy = resp.json()
+            link = (f"https://discord.com/billing/partner-promotions/1180231712274387115/{thingy['token']}")
+            print(link)
+            with open("promos.txt", "a") as f:
+                f.write(f"{link}\n")
+        else:
+            print("opera being fucky again and doesnt return promos (happens quite often and it normal)")
+    except Exception as e:
+        print(e)
 
 def start():
     while True:
