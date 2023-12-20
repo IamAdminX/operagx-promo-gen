@@ -1,11 +1,12 @@
 import requests, random, string, threading, json
 
+with open('config.json') as f:
+        config = json.load(f)
+
 def rstr(l):
     return ''.join(random.choice(string.ascii_letters) for _ in range(l))
 
 def generate():
-    with open('config.json') as f:
-        config = json.load(f)
     headers = { #that is literally all headers u need lmao except for the user agent
         "content-type": "application/json",
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 OPR/104.0.0.0 (Edition std-1)"
@@ -42,5 +43,5 @@ def start():
         generate()
 
 if __name__ == "__main__":
-    for i in range(100):
+    for i in range(config.get("threads")):
         threading.Thread(target=start).start()
